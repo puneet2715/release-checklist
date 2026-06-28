@@ -11,29 +11,40 @@ let healthy = false;
 let loggedError = false;
 
 if (env.REDIS_URL) {
-  client = new Redis(env.REDIS_URL, {
-    // Fail fast instead of hanging when Redis is down.
-    maxRetriesPerRequest: 1,
-    enableOfflineQueue: false,
-    connectTimeout: 3000,
-    retryStrategy: (times) => Math.min(times * 200, 2000),
-  });
+  try {
+    client = new Redis(env.REDIS_URL, {
+      // Fail fast instead of hanging when Redis is down.
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      connectTimeout: 3000,
+      retryStrategy: (times) => Math.min(times * 200, 2000),
+    });
 
-  client.on('ready', () => {
-    healthy = true;
-    loggedError = false;
-    console.log('✅ Redis connected — release list caching enabled');
-  });
-  client.on('end', () => {
+    client.on('ready', () => {
+      healthy = true;
+      loggedError = false;
+      console.log('✅ Redis connected — release list caching enabled');
+    });
+    client.on('end', () => {
+      healthy = false;
+    });
+    client.on('error', (err) => {
+      healthy = false;
+      if (!loggedError) {
+        console.warn(`⚠️  Redis unavailable, serving without cache: ${err.message}`);
+        loggedError = true;
+      }
+    });
+  } catch (err) {
+    // A malformed REDIS_URL must NEVER take down the API. ioredis throws
+    // synchronously on an invalid URL, so we swallow it and disable caching —
+    // the app keeps serving from the database.
+    client = null;
     healthy = false;
-  });
-  client.on('error', (err) => {
-    healthy = false;
-    if (!loggedError) {
-      console.warn(`⚠️  Redis unavailable, serving without cache: ${err.message}`);
-      loggedError = true;
-    }
-  });
+    console.warn(
+      `⚠️  Invalid REDIS_URL — caching disabled, serving from the database: ${(err as Error).message}`,
+    );
+  }
 }
 
 export const cache = {
