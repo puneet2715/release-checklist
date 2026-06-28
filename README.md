@@ -1,5 +1,12 @@
 # 🚀 Release Checklist
 
+**Live demo:**
+- App (SPA): https://release-checklist-web.onrender.com
+- API: https://release-checklist-api-ry9r.onrender.com/api/health
+
+> Hosted on Render (free tier) + Neon Postgres. The API spins down after
+> inactivity, so the first request after an idle period can take ~50s to wake.
+
 A small, single-page web app to track a software release through a fixed
 checklist of steps. A **Release** has a name, a date, optional notes, and a set
 of steps that are either **on** or **off**. Its status is **computed, never
