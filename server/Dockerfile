@@ -1,6 +1,8 @@
 # ── Build stage: compile TypeScript & generate the Prisma client ──────────────
 FROM node:20-alpine AS build
 WORKDIR /app
+# Alpine ships without OpenSSL; Prisma needs it to select the correct engine.
+RUN apk add --no-cache openssl
 COPY server/package.json ./
 RUN npm install
 COPY server/ ./
@@ -10,6 +12,7 @@ RUN npx prisma generate && npx tsc -p tsconfig.json
 FROM node:20-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
+RUN apk add --no-cache openssl
 COPY server/package.json ./
 RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
