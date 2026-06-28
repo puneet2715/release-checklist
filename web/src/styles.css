@@ -229,6 +229,21 @@ h3 {
   color: var(--muted);
   text-decoration: line-through;
 }
+.checklist__spinner {
+  margin-left: auto;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Additional info + actions ─────────────────────────────────────────── */
 .detail__info,
@@ -323,14 +338,14 @@ h3 {
   background: var(--danger);
   color: #fff;
 }
-.btn--danger-ghost {
+.btn--danger-outline {
   background: transparent;
-  border-color: transparent;
+  border-color: #f0b4b4;
   color: var(--danger);
-  padding-left: 0;
 }
-.btn--danger-ghost:hover {
-  text-decoration: underline;
+.btn--danger-outline:hover {
+  background: #fdeaea;
+  border-color: var(--danger);
 }
 
 /* ── States & banners ──────────────────────────────────────────────────── */

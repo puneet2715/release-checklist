@@ -10,6 +10,10 @@ services:
     dockerfilePath: ./server/Dockerfile
     dockerContext: .
     plan: free
+    # Co-locate the API with the Neon database (ap-southeast-1) to avoid a
+    # cross-Pacific round trip on every query. The web app is a global static
+    # CDN, so it has no region of its own.
+    region: singapore
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV

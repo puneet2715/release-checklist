@@ -83,17 +83,29 @@ export async function toggleStep(
   stepId: StepId,
   completed: boolean,
 ): Promise<ReleaseDTO> {
-  // Read-modify-write in a transaction so concurrent toggles can't clobber
-  // each other (last-writer-wins on the whole JSON blob would lose updates).
-  const updated = await prisma.$transaction(async (tx) => {
-    const current = await tx.release.findUnique({ where: { id } });
-    if (!current) throw new AppError(404, 'Release not found');
-    const steps = normalizeSteps(current.steps);
-    steps[stepId] = completed;
-    return tx.release.update({ where: { id }, data: { steps } });
-  });
+  // Single atomic statement instead of a read-modify-write transaction: ONE DB
+  // round trip rather than ~4 (BEGIN/SELECT/UPDATE/COMMIT) — a big win when the
+  // API and DB are in different regions. `jsonb_set` updates only this one key,
+  // so concurrent toggles of different steps can't clobber each other (more
+  // correct than the old whole-blob write). `stepId` is validated against the
+  // step enum upstream AND passed as a bound parameter, so there's no injection.
+  const rows = await prisma.$queryRaw<Release[]>`
+    UPDATE releases
+    SET steps = jsonb_set(coalesce(steps, '{}'::jsonb), ${`{${stepId}}`}::text[], to_jsonb(${completed}::boolean), true),
+        updated_at = now()
+    WHERE id = ${id}::uuid
+    RETURNING
+      id,
+      name,
+      release_date    AS "releaseDate",
+      additional_info AS "additionalInfo",
+      steps,
+      created_at      AS "createdAt",
+      updated_at      AS "updatedAt"
+  `;
+  if (rows.length === 0) throw new AppError(404, 'Release not found');
   await invalidateListCache();
-  return toDTO(updated);
+  return toDTO(rows[0]);
 }
 
 export async function deleteRelease(id: string): Promise<void> {

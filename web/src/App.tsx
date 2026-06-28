@@ -6,7 +6,7 @@ import { CreateReleaseModal } from './components/CreateReleaseModal';
 import { formatDate } from './utils/format';
 
 export default function App() {
-  const { releases, steps, loading, error, setError, create, toggleStep, updateInfo, remove } =
+  const { releases, steps, loading, error, setError, savingSteps, create, toggleStep, updateInfo, remove } =
     useReleases();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -78,6 +78,7 @@ export default function App() {
             <ReleaseDetail
               release={selected}
               steps={steps}
+              savingSteps={savingSteps}
               onToggle={(stepId, completed) => void toggleStep(selected.id, stepId, completed)}
               onSaveInfo={(info) => updateInfo(selected.id, info)}
               onDelete={() => remove(selected.id)}

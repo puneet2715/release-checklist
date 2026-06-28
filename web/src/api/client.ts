@@ -20,23 +20,26 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  getSteps: () => http<StepDefinition[]>('/api/steps'),
+  getSteps: (signal?: AbortSignal) => http<StepDefinition[]>('/api/steps', { signal }),
 
-  listReleases: () => http<Release[]>('/api/releases'),
+  listReleases: (signal?: AbortSignal) => http<Release[]>('/api/releases', { signal }),
 
-  createRelease: (input: CreateReleaseInput) =>
-    http<Release>('/api/releases', { method: 'POST', body: JSON.stringify(input) }),
+  createRelease: (input: CreateReleaseInput, signal?: AbortSignal) =>
+    http<Release>('/api/releases', { method: 'POST', body: JSON.stringify(input), signal }),
 
   updateRelease: (
     id: string,
     input: Partial<Pick<Release, 'name' | 'releaseDate' | 'additionalInfo'>>,
-  ) => http<Release>(`/api/releases/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
+    signal?: AbortSignal,
+  ) => http<Release>(`/api/releases/${id}`, { method: 'PATCH', body: JSON.stringify(input), signal }),
 
-  toggleStep: (id: string, stepId: string, completed: boolean) =>
+  toggleStep: (id: string, stepId: string, completed: boolean, signal?: AbortSignal) =>
     http<Release>(`/api/releases/${id}/steps`, {
       method: 'PATCH',
       body: JSON.stringify({ stepId, completed }),
+      signal,
     }),
 
-  deleteRelease: (id: string) => http<void>(`/api/releases/${id}`, { method: 'DELETE' }),
+  deleteRelease: (id: string, signal?: AbortSignal) =>
+    http<void>(`/api/releases/${id}`, { method: 'DELETE', signal }),
 };

@@ -7,12 +7,20 @@ import { formatDate } from '../utils/format';
 interface Props {
   release: Release;
   steps: StepDefinition[];
+  savingSteps: Set<string>;
   onToggle: (stepId: string, completed: boolean) => void;
   onSaveInfo: (info: string) => Promise<void>;
   onDelete: () => Promise<void> | void;
 }
 
-export function ReleaseDetail({ release, steps, onToggle, onSaveInfo, onDelete }: Props) {
+export function ReleaseDetail({
+  release,
+  steps,
+  savingSteps,
+  onToggle,
+  onSaveInfo,
+  onDelete,
+}: Props) {
   const [info, setInfo] = useState(release.additionalInfo ?? '');
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -55,7 +63,7 @@ export function ReleaseDetail({ release, steps, onToggle, onSaveInfo, onDelete }
       </div>
 
       <h3 className="detail__subtitle">Checklist</h3>
-      <StepChecklist steps={steps} release={release} onToggle={onToggle} />
+      <StepChecklist steps={steps} release={release} savingSteps={savingSteps} onToggle={onToggle} />
 
       <h3 className="detail__subtitle">Additional information</h3>
       <textarea
@@ -79,7 +87,7 @@ export function ReleaseDetail({ release, steps, onToggle, onSaveInfo, onDelete }
             </button>
           </div>
         ) : (
-          <button className="btn btn--danger-ghost" onClick={() => setConfirmDelete(true)}>
+          <button className="btn btn--danger-outline" onClick={() => setConfirmDelete(true)}>
             Delete release
           </button>
         )}
