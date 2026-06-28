@@ -2,10 +2,12 @@
 
 **Live demo:**
 - App (SPA): https://release-checklist-web.onrender.com
-- API: https://release-checklist-api-ry9r.onrender.com/api/health
+- API: https://release-checklist-api-ra82.onrender.com/api/health
+- GraphQL explorer: https://release-checklist-api-ra82.onrender.com/graphql
 
-> Hosted on Render (free tier) + Neon Postgres. The API spins down after
-> inactivity, so the first request after an idle period can take ~50s to wake.
+> Hosted on Render (free tier) + Neon Postgres + Upstash Redis. API and DB are
+> co-located in Singapore (ap-southeast-1). The API spins down after inactivity,
+> so the first request after an idle period can take ~50s to wake.
 
 A small, single-page web app to track a software release through a fixed
 checklist of steps. A **Release** has a name, a date, optional notes, and a set
