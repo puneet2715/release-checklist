@@ -28,6 +28,7 @@ chosen**:
 | ------------ | ------------------------------------------------------------ | --------------------------------------------------------- |
 | **Frontend** | React 18 + TypeScript, built with Vite (SPA)                 | Fast, typed, deploys as static files.                     |
 | **Backend**  | Node + Express + TypeScript (REST)                           | Small, explicit, easy to read.                            |
+| **GraphQL**  | graphql-yoga at `/graphql`, same service layer               | Optional typed API + GraphiQL explorer, alongside REST.   |
 | **Database** | PostgreSQL (Neon) via Prisma ORM                             | Managed, scalable; type-safe migrations.                  |
 | **Cache**    | Redis (optional)                                             | Caches the release list; **degrades gracefully** if down. |
 | **Repo**     | npm-workspaces monorepo (`server/` + `web/`)                 | One repo, one install.                                    |
@@ -170,6 +171,44 @@ A release object looks like:
   "totalSteps": 8,
   "createdAt": "…",
   "updatedAt": "…"
+}
+```
+
+---
+
+### GraphQL (alternative API layer)
+
+A GraphQL endpoint lives at **`/graphql`** with an in-browser **GraphiQL** explorer,
+backed by the *same service layer* as REST — logic, caching, and validation are
+shared, so the two surfaces never diverge. The SPA uses REST; GraphQL is provided
+as an equivalent typed API (the "nice-to-have").
+
+Schema summary:
+
+```graphql
+type Query {
+  releases: [Release!]!
+  release(id: ID!): Release
+  steps: [StepDefinition!]!
+}
+type Mutation {
+  createRelease(input: CreateReleaseInput!): Release!
+  updateRelease(id: ID!, input: UpdateReleaseInput!): Release!
+  toggleStep(id: ID!, stepId: String!, completed: Boolean!): Release!
+  deleteRelease(id: ID!): Boolean!
+}
+```
+
+Example mutation:
+
+```graphql
+mutation {
+  createRelease(input: { name: "v2.4.0", releaseDate: "2026-07-15T09:00:00Z" }) {
+    id
+    status # planned | ongoing | done (computed from steps)
+    completedCount
+    steps { id label completed }
+  }
 }
 ```
 
