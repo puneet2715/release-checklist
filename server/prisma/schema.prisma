@@ -1,0 +1,28 @@
+// Prisma schema — Release Checklist
+// One model: Release. Steps are a fixed, code-defined list, so we don't need a
+// Step table — we just store each release's per-step completion as JSONB.
+// `status` (planned|ongoing|done) is NOT stored: it is computed from `steps`
+// so there is a single source of truth and it can never drift.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Release {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String   @db.VarChar(200)
+  releaseDate    DateTime @map("release_date") @db.Timestamptz(6)
+  additionalInfo String?  @map("additional_info")
+  /// Map of stepId -> boolean, e.g. { "code_freeze": true, "qa_signoff": false }
+  steps          Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([releaseDate])
+  @@map("releases")
+}

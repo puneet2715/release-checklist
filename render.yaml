@@ -1,0 +1,45 @@
+# Render Blueprint — deploys the API (Docker) + the SPA (static site).
+# Push this repo, then in Render: New → Blueprint → pick this repo.
+# After the first deploy, set the secret env vars noted below (sync:false).
+
+services:
+  # ── Backend API ──────────────────────────────────────────────────────────
+  - type: web
+    name: release-checklist-api
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: CACHE_TTL_SECONDS
+        value: 60
+      # Paste your Neon connection string (Settings → Environment).
+      - key: DATABASE_URL
+        sync: false
+      # Optional: Upstash Redis URL (rediss://...). Omit to run without cache.
+      - key: REDIS_URL
+        sync: false
+      # The web app's URL, e.g. https://release-checklist-web.onrender.com
+      - key: WEB_ORIGIN
+        sync: false
+
+  # ── Frontend SPA (static) ────────────────────────────────────────────────
+  - type: web
+    name: release-checklist-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      # The API's URL, e.g. https://release-checklist-api.onrender.com
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

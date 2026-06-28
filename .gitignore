@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# env / secrets — never commit real credentials
+.env
+.env.*
+!.env.example
+
+# build output
+dist/
+build/
+web/dist/
+server/dist/
+
+# prisma generated client
+server/src/generated/
+
+# test / coverage
+coverage/
+playwright-report/
+test-results/
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
